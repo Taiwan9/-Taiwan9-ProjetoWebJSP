@@ -1,0 +1,8 @@
+INDEX VERSION 1.4+C:\Users\clown\OneDrive\Documentos\Jdev-Treinamento\Workspace-Jsp1\.metadata\.plugins\org.eclipse.wst.jsdt.core\indexes
+3137674710.index
+1231297247.index
+745854426.index
+2496182584.index
+1875906760.index
+2264037668.index
+3897528423.index

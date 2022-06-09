@@ -1,0 +1,7 @@
+INDEX VERSION 1.131
+C:\Users\clown\OneDrive\Documentos\Jdev-Treinamento\Workspace-Jsp1\.metadata\.plugins\org.eclipse.jst.jsp.core\jspsearch\3897528423.index
+\curso-jsp\src\main\java
+C:\Users\clown\OneDrive\Documentos\Jdev-Treinamento\Workspace-Jsp1\.metadata\.plugins\org.eclipse.jst.jsp.core\jspsearch\1239803670.index
+\curso-jsp\src\main\java
+C:\Users\clown\OneDrive\Documentos\Jdev-Treinamento\Workspace-Jsp1\.metadata\.plugins\org.eclipse.jst.jsp.core\jspsearch\2402761227.index
+\curso-jsp\src\main\java

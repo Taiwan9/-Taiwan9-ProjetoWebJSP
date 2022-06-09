@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: PostgresSql
+Bundle-SymbolicName: PostgresSql
+Bundle-Version: 1.0.0
+Automatic-Module-Name: PostgresSql
+Bundle-RequiredExecutionEnvironment: JavaSE-15

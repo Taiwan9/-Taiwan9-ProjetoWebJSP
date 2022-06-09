@@ -1,0 +1,166 @@
+package servlets;
+
+import java.io.IOException;
+import java.util.List;
+
+import org.apache.tomcat.jakartaee.commons.compress.utils.IOUtils;
+import org.apache.tomcat.util.codec.binary.Base64;
+import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import dao.DAOUsuarioRepository;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Part;
+import model.Modellogin;
+
+/**
+ * Servlet implementation class ServletUsuarioController
+ */
+
+@MultipartConfig
+@WebServlet(urlPatterns = {"/ServletUsuarioController"})
+public class ServletUsuarioController extends  ServletGenericUtil {
+	private static final long serialVersionUID = 1L;
+
+	private DAOUsuarioRepository daoUsuarioRepository = new DAOUsuarioRepository();
+
+	public ServletUsuarioController() {
+		super();
+
+	}
+
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+
+		try {
+			String acao = request.getParameter("acao");
+
+			if (acao != null && !acao.isEmpty() && acao.equalsIgnoreCase("deletar")) {
+
+				String idUser = request.getParameter("id");
+				daoUsuarioRepository.deletarUser(idUser);
+				
+			     List<Modellogin> modelLogins = daoUsuarioRepository.consultaUsuarioLista(super.getUserLogado(request));
+			     request.setAttribute("modelLogins", modelLogins);
+
+				request.setAttribute("msg", "Excluido com sucesso");
+				request.getRequestDispatcher("/usuario.jsp").forward(request, response);
+
+			} else if (acao != null && !acao.isEmpty() && acao.equalsIgnoreCase("deletarajax")) {
+
+				String idUser = request.getParameter("id");
+				daoUsuarioRepository.deletarUser(idUser);
+				
+				response.getWriter().write("Excluido com sucesso");
+
+			} else if (acao != null && !acao.isEmpty() && acao.equalsIgnoreCase("buscarUserAjax")) {
+
+				String nomeBusca = request.getParameter("nomeBusca");
+				List<Modellogin> dadosJsonUser = daoUsuarioRepository.consultaUsuarioLista(nomeBusca, super.getUserLogado(request));
+				
+				ObjectMapper mapper = new ObjectMapper();
+				String json = mapper.writeValueAsString(dadosJsonUser);
+				
+				response.getWriter().write(json);
+
+			}else if (acao != null && !acao.isEmpty() && acao.equalsIgnoreCase("buscarEditar")) {
+			    String id = request.getParameter("id");
+				 
+			     Modellogin modelLogin = daoUsuarioRepository.consultaUsuarioID(id, super.getUserLogado(request));
+			 
+			     List<Modellogin> modelLogins = daoUsuarioRepository.consultaUsuarioLista(super.getUserLogado(request));
+			     request.setAttribute("modelLogins", modelLogins);
+			     
+			    request.setAttribute("msg", "Usuário em edição");
+				request.setAttribute("modolLogin", modelLogin);
+				request.getRequestDispatcher("principal/usuario.jsp").forward(request, response);
+			}else if (acao != null && !acao.isEmpty() && acao.equalsIgnoreCase("listarUser")) {
+				
+				List<Modellogin> modellogins = daoUsuarioRepository.consultaUsuarioLista(super.getUserLogado(request));
+				
+				request.setAttribute("msg", "Usuários carregados");
+				request.setAttribute("modelLogins", modellogins);
+				request.getRequestDispatcher("principal/usuario.jsp").forward(request, response);
+			}
+			else {
+				
+			     List<Modellogin> modelLogins = daoUsuarioRepository.consultaUsuarioLista(super.getUserLogado(request));
+			     request.setAttribute("modelLogins", modelLogins);
+			     
+				request.getRequestDispatcher("principal/usuario.jsp").forward(request, response);				
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			RequestDispatcher redirecionar = request.getRequestDispatcher("erro.jsp");
+			request.setAttribute("msg", e.getMessage());
+			redirecionar.forward(request, response);
+		}
+
+	}
+
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		try {
+
+			String msg = "Operação realizada com sucesso!";
+
+			String id = request.getParameter("id");
+			String nome = request.getParameter("nome");
+			String email = request.getParameter("email");
+			String login = request.getParameter("login");
+			String senha = request.getParameter("senha");
+			String perfil = request.getParameter("perfil");
+
+			Modellogin modellogin = new Modellogin();
+			modellogin.setId(id != null && !id.isEmpty() ? Long.parseLong(id) : null);
+			modellogin.setNome(nome);
+			modellogin.setEmail(email);
+			modellogin.setLogin(login);
+			modellogin.setSenha(senha);
+			modellogin.setPerfil(perfil);
+			
+			if(ServletFileUpload.isMultipartContent(request)) {
+				Part part = request.getPart("fileFoto");//Pega a foto da tela
+				byte[] foto = IOUtils.toByteArray(part.getInputStream()); //converte imagem para byte
+				String imagemBase64 = "data:image/" + part.getContentType().split("\\/")[1] + new Base64().encodeBase64String(foto) + ";base64,";
+				modellogin.setFotoUser(imagemBase64);
+				modellogin.setExtensaofotoUser(part.getContentType().split("\\/")[1]);
+			}
+
+			if (daoUsuarioRepository.validarLogin(modellogin.getLogin()) && modellogin.getId() == null) {
+				msg = "Já existe outro usuário com o mesmo login, informe outro login!";
+
+			} else {
+				if (modellogin.isNovo()) {
+					msg = "Gravado com sucesso!";
+				} else {
+					msg = "Atualizado com sucesso!";
+				}
+				modellogin = daoUsuarioRepository.gravarUruario(modellogin, super.getUserLogado(request));
+			}
+			
+		     List<Modellogin> modelLogins = daoUsuarioRepository.consultaUsuarioLista(super.getUserLogado(request));
+		     request.setAttribute("modelLogins", modelLogins);
+
+			request.setAttribute("msg", msg);
+			RequestDispatcher redireciona = request.getRequestDispatcher("principal/usuario.jsp");
+			request.setAttribute("modolLogin", modellogin);
+			redireciona.forward(request, response);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			RequestDispatcher redirecionar = request.getRequestDispatcher("erro.jsp");
+			request.setAttribute("msg", e.getMessage());
+			redirecionar.forward(request, response);
+		}
+
+	}
+
+}
